@@ -1,0 +1,113 @@
+#! /bin/bash
+
+# shellpomo - a simple Pomodoro timer using the Bash shell and Zenity
+# Copyright (C) 2015 John Davies
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Some default values
+DEFAULTPOMODOROS="6"
+MINPOMODOROS="1"
+MAXPOMODOROS="12"
+WORKTIME="15"     # in seconds
+SHORTREST="300"     # in seconds
+LONGREST="1200"     # in seconds
+LONGBREAK="4"       # number of pomodoros before a long break
+UPDATEINTERVAL="1"  # in seconds
+SOUND="/usr/share/sounds/ubuntu/stereo/message.ogg"
+# Tomato icon obtained from: http://www.iconarchive.com/show/paradise-fruits-icons-by-artbees/Tomato-icon.html
+# Licence:  CC Attribution-Noncommercial-No Derivate 4.0, http://creativecommons.org/licenses/by-nc-nd/4.0/legalcode
+ICON="/home/john/projects/shellpomo/Tomato-icon.png"
+
+# Function to provide the updates for the progress bar
+# Parameter 1 = time in seconds
+# Parameter 2 = update interval in seconds
+function countdown() {
+  TIME=$1
+  INTERVAL=$2
+  for (( t=$TIME; t>=0; t-=INTERVAL )); do
+    # Show time remaining in minutes / seconds
+      printf "# Time remaining: %d:%02d\n" $(( t/60 )) $(( t % 60 ));
+      echo "$(( ( ( TIME - t ) * 100 ) / TIME ))";
+      sleep "$INTERVAL";
+  done
+}
+
+# Get the number of pomodoros
+POMODOROS=`zenity --scale --text="Select number of pomodoros" --value=$DEFAULTPOMODOROS --min-value=$MINPOMODOROS --max-value=$MAXPOMODOROS`
+
+if [ "$?" -ne 0 ];
+then
+	# No value selected or some other error so quit
+	exit 1
+fi
+
+# Show the start confirmation dialog
+zenity --question --text="Ready to start?"
+
+if [ "$?" -eq 0 ];
+then
+	# Loop through the pomodoros
+	for((i=1; i<=$POMODOROS; i++ ));
+	do
+
+		# Show the countdown for the work
+		( countdown "$WORKTIME" "$UPDATEINTERVAL"; \
+		paplay $SOUND; \
+		notify-send -i $ICON 'Shell Pomodoro' 'Work session complete' ) \
+		| zenity --progress --title="Pomodoro: $i of $POMODOROS" --percentage=0
+
+		# Check reason for exit - just quit for now
+		if [ "$?" -eq 1 ]; then
+		    zenity --info --text="Session abandoned"
+		    exit 1
+		fi
+
+		# If this is not the last pomodoro then show the rest countdown
+		if [ $i -ne $POMODOROS ];
+		then
+			# Check if it's a short or long rest
+			if [ $(( $i % $LONGBREAK )) -eq 0 ];
+			then
+				( countdown "$LONGREST" "$UPDATEINTERVAL"; \
+				paplay $SOUND; \
+				notify-send -i $ICON 'Shell Pomodoro' 'Long rest complete' ) \
+				| zenity --progress --title="Long rest" --percentage=0
+				# Check reason for exit - just quit for now
+				if [ "$?" -eq 1 ]; then
+				    zenity --info --text="Session abandoned"
+				    exit 1
+				fi
+			else
+				( countdown "$SHORTREST" "$UPDATEINTERVAL"; \
+				paplay $SOUND; \
+				notify-send -i $ICON 'Shell Pomodoro' 'Short rest complete' ) \
+				| zenity --progress --title="Short rest" --percentage=0
+				# Check reason for exit - just quit for now
+				if [ "$?" -eq 1 ]; then
+				    zenity --info --text="Session abandoned"
+				    exit 1
+				fi
+			fi
+		fi
+	done
+
+	# Show finish message
+	zenity --info --text="Pomodoros completed"
+
+else
+	# Abort session
+	zenity --info --text="Session abandoned"
+
+fi

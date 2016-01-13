@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Shell Pomodoro
+Icon=/home/john/projects/shellpomo/Tomato-icon.png
+Exec=/home/john/projects/shellpomo/shellpomo
+Comment=Simple Pomodoro Timer
+Terminal=false
+Comment[en_GB]=
+GenericName[en_GB]=Simple Pomodoro Timer
