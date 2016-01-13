@@ -20,7 +20,7 @@
 DEFAULTPOMODOROS="6"
 MINPOMODOROS="1"
 MAXPOMODOROS="12"
-WORKTIME="15"     # in seconds
+WORKTIME="1500"     # in seconds
 SHORTREST="300"     # in seconds
 LONGREST="1200"     # in seconds
 LONGBREAK="4"       # number of pomodoros before a long break
