@@ -21,7 +21,7 @@ Drag and drop this file to the Unity launcher to add a quick launch icon. Note t
 
 ### Tomato-icon.png
 
-An icon which is used for the Unity lancher and the notifications.
+An icon which is used for the Unity lancher and the notifications. This should normally be in the same directory as the BASH script.
 
 Tomato icon obtained from: http://www.iconarchive.com/show/paradise-fruits-icons-by-artbees/Tomato-icon.html
 
